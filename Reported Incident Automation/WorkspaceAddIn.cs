@@ -176,7 +176,10 @@ namespace Reported_Incident_Automation
             {
                
                 _incidentRecord = _recordContext.GetWorkspaceRecord(RightNow.AddIns.Common.WorkspaceRecordType.Incident) as IIncident;
-
+                if (form.IsDisposed == true)
+                {
+                    form = new ProgressForm();
+                }
                 switch (ActionName)
                 {
                     case "singleWarrantyCheck":
