@@ -122,7 +122,7 @@ namespace Reported_Incident_Automation
         private void ShowData(CSVTable resultTable)
         {
             clearDataGrid();//clear old view
-
+            
             DataTable dt = new DataTable();
             string[] tablerow = resultTable.Rows;
             string[] tablecolumn = resultTable.Columns.Split('~');
@@ -152,16 +152,32 @@ namespace Reported_Incident_Automation
         /// </summary>
         private void SelectExistingVins()
         {
+            int n;
+            string[] splitvins; 
             if (_existingAffectedVins != null && _existingAffectedVins.Count > 0)
             {
                 foreach (DataGridViewRow row in dataGridView1.Rows)
                 {
                     foreach (string vin in _existingAffectedVins)
                     {
-                        int busId = Convert.ToInt32(vin.Split('~')[0]);// First element is bus id and second is Incident_VIN ID
-                        if (Convert.ToInt32(row.Cells["Bus ID"].Value) == busId)
+                        
+                        splitvins = vin.Split('~');
+                        foreach (string v in splitvins)
                         {
-                            row.Cells["Select_CheckBox"].Value = true;
+
+                            bool isNumeric = int.TryParse(v, out n);
+                            if (isNumeric)
+                            {
+                               
+                                int busId = Convert.ToInt32(v);// First element is bus id and second is Incident_VIN ID
+                                if (Convert.ToInt32(row.Cells["Bus ID"].Value) == busId)
+                                {
+                                    row.Cells["Select_CheckBox"].Value = true;
+                                }
+                            }
+
+
+
                         }
                     }
                 }
@@ -248,19 +264,28 @@ namespace Reported_Incident_Automation
                 if (_unSelectedIDs != null && _unSelectedIDs.Count > 0)
                 {
                     List<int> deleteVins = new List<int>();
-
+                    string[] splitvins;
+                    int n; 
                     if (_existingAffectedVins != null && _existingAffectedVins.Count > 0)
                     {
                         foreach (string uvin in _unSelectedIDs)
                         {
                             foreach (string evin in _existingAffectedVins)
                             {
-                                int busId = Convert.ToInt32(evin.Split('~')[0]);// First element is bus id and second is Incident_VIN ID
-                                if (Convert.ToInt32(uvin) == busId)
+                                splitvins = evin.Split('~');
+                                foreach (string v in splitvins)
                                 {
-                                    // First element is bus id and second is Incident_VIN ID
-                                    //deleteVins.Add(Convert.ToInt32(evin.Split('~')[1]));
-                                    deleteVins.Add(Convert.ToInt32(evin.Split('~')[0]));
+                                    bool isNumeric = int.TryParse(v, out n);
+                                    if (isNumeric)
+                                    {
+                                        int busId = Convert.ToInt32(v);// First element is bus id and second is Incident_VIN ID
+                                        if (Convert.ToInt32(uvin) == busId)
+                                        {
+                                            // First element is bus id and second is Incident_VIN ID
+                                            //deleteVins.Add(Convert.ToInt32(evin.Split('~')[1]));
+                                            deleteVins.Add(Convert.ToInt32(v));
+                                        }
+                                    }
                                 }
                             }
                         }

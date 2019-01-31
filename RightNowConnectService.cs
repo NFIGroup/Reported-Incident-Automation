@@ -519,8 +519,8 @@ namespace Reported_Incident_Automation
                              + " WHERE Bus IN (" + String.Join(",", deleteVins) + ")"
                              + " AND IV.Incident.Customfields.CO.reporting_incident ="+ rID;
                 string[] resultset = GetRNData("Get Incident_VIN info", query);
-
-                foreach(string result in resultset)
+                
+                foreach (string result in resultset)
                 {
                     GenericObject genObj = new GenericObject
                     {
@@ -545,6 +545,7 @@ namespace Reported_Incident_Automation
                 
                 //Get unique internal Inc ID
                 internalIncIDs = internalIncIDs.Distinct().ToList();
+                
                 foreach (int internalIncID in internalIncIDs)
                 {
                     IncidentVinCountForInternalInc(internalIncID);//check if Internal incident is empty, if so then delete that
@@ -565,12 +566,16 @@ namespace Reported_Incident_Automation
         {
             string query = "SELECT count(ID) as count FROM CO.Incident_VIN WHERE incident = " + internalIncID;
             string[] resultSet = GetRNData("Get incident_VIN count", query);
+            
             if (resultSet != null && resultSet.Length > 0)
             {
+                
                 if (resultSet[0] == "0")//if count is 0 then delete internal incident too
                 {
-                    List<int> incId = new List<int>();
+                    
+                    List <int> incId = new List<int>();
                     incId.Add(internalIncID);
+                    
                     DeleteInternalIncident(incId);
                 }
             }
@@ -1018,7 +1023,11 @@ namespace Reported_Incident_Automation
 
                     createObject.Add(genObj);
                 }
-                callBatchJob(getCreateMsg(createObject));
+                //Don't suppress CPM ..
+                CreateMsg createMsg = new CreateMsg();
+                createMsg.RNObjects = createObject.ToArray();
+
+                callBatchJob(createMsg);
             }
             catch (Exception ex)
             {

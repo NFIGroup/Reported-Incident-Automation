@@ -197,57 +197,44 @@ namespace Reported_Incident_Automation
         {
             Dictionary<string, object> singleOptionGroup = null;
             string orgID = "";
+            string vendorID = "";
             Dictionary<string, object> item = (Dictionary<string, object>)vinItem;
             Dictionary<string, string> incidentVinInfo = new Dictionary<string, string>();
             string combo = "";
             string busModel = "";
             string vin = "";
-
-           
-            
-            int incidentVinID = getIncidentVinID(vinsOfInternalInc, item["VIN"].ToString());
-            if (item["VENDOR_ID"].ToString().Trim() != "")
-            {
-                //Get OOTB ORG ID from EBS ORG ID
-                orgID = _rnConnectService.GetOrgID(Convert.ToInt32(item["VENDOR_ID"].ToString()));
-                //RightNowConnectService.GetService().setIncidentField("CO", "supplier_from_webservice", orgID,_incidentRecord);
-                incidentVinInfo.Add("supplier_from_webservice", orgID);
-            }
-            string[] busInfo = _rnConnectService.getBusInfoIV(incidentVinID);
             string[] ewrInfo;
+
+            int incidentVinID = getIncidentVinID(vinsOfInternalInc, item["VIN"].ToString());
+            string[] busInfo = _rnConnectService.getBusInfoIV(incidentVinID);
+
+            //By deafult set causal_part_desc at RI level
             RightNowConnectService.GetService().setIncidentField("CO", "causal_part_desc", item["PART_DESC"].ToString(), _incidentRecord);
 
-            Dictionary<string, object> vinSubResult = (Dictionary<string, object>)item["VIN_SUB_RESULT"];
-            //Check if multi option group is retured, if so then save jSon response
-           
-            if (IsArray(vinSubResult["VIN_SUB_RESULT_ITEM"]))
+            //Get OOTB ORG ID from EBS ORG ID
+            if (item["VENDOR_ID"].ToString().Trim() != "")
             {
-               
+                vendorID = item["VENDOR_ID"].ToString();
+                orgID = _rnConnectService.GetOrgID(Convert.ToInt32(vendorID));
+                incidentVinInfo.Add("supplier_from_webservice", orgID);
+            }
+
+            Dictionary<string, object> vinSubResult = (Dictionary<string, object>)item["VIN_SUB_RESULT"];
+
+            if (vinSubResult == null)//if no info sent by EBS then return
+                return;
+
+            //Check if multi option group is retured, if so then save jSon response           
+            if (IsArray(vinSubResult["VIN_SUB_RESULT_ITEM"]))
+            {               
                 object[] optionItems = (object[])vinSubResult["VIN_SUB_RESULT_ITEM"];
                 if (optionItems.Length == 1)//if one elemnet in an array that mean too single option group
-                {
-                    
-                    singleOptionGroup = (Dictionary<string, object>)optionItems[0];
-                    
-                    if (busInfo != null && busInfo.Length > 0)
-                    {
-                        vin = busInfo[0].Split('~')[0];
-                        busModel = vin.Substring(4, 1);
-                        combo = busModel + "-" + singleOptionGroup["OPTIONGROUP_SEQNO"].ToString().Trim();
-                        
-                        ewrInfo = _rnConnectService.getEWRID(combo);
-                        if (ewrInfo != null && ewrInfo.Length > 0)
-                        {
-                            incidentVinInfo.Add("EWR_Xref_Id", ewrInfo[0].Split('~')[0]);
-                            
-                        }
-                        
-                    }
+                {                    
+                    singleOptionGroup = (Dictionary<string, object>)optionItems[0];                    
                 }
                 else
                 {
-                   
-                    //Include the vendor id (org) in multi option grp object[], so it can be used in other add-in logic
+                    //Include the vendor id (org) and EWR_Xref_Id in multi option grp object[], so it can be used in other add-in logic
                     foreach (object option in (object[])((Dictionary<string, object>)((Dictionary<string, object>)vinItem)["VIN_SUB_RESULT"])["VIN_SUB_RESULT_ITEM"])
                     {
                         Dictionary<string, object> response = (Dictionary<string, object>)option;
@@ -260,14 +247,10 @@ namespace Reported_Incident_Automation
                             ewrInfo = _rnConnectService.getEWRID(combo);
                             if (ewrInfo != null && ewrInfo.Length > 0)
                             {
-                                incidentVinInfo.Add("EWR_Xref_Id", ewrInfo[0].Split('~')[0]);
-                              
+                                response.Add("EWR_Xref_Id", ewrInfo[0].Split('~')[0]);// add  EWR_Xref_Id in response list for multi option grp                        
                             }
-                        }
-                        
-                        response.Add("VENDOR_ID", orgID);
-
-
+                        }                        
+                        response.Add("VENDOR_ID", vendorID);//add VENDOR_ID in response list 
                     }
                     string optionGrpJson = WebServiceRequest.JsonSerialize(((Dictionary<string, object>)vinItem)["VIN_SUB_RESULT"]);
                     _rnConnectService.addIncidentVINRecord(incidentVinID, null, optionGrpJson);
@@ -276,24 +259,7 @@ namespace Reported_Incident_Automation
             //If not in array that means single option group
             else
             {
-               
                 singleOptionGroup = (Dictionary<String, object>)vinSubResult["VIN_SUB_RESULT_ITEM"];
-
-
-                if (busInfo != null && busInfo.Length > 0)
-                {
-                    vin = busInfo[0].Split('~')[0];
-                    busModel = vin.Substring(4, 1);
-                    combo = busModel + "-" + singleOptionGroup["OPTIONGROUP_SEQNO"].ToString().Trim();
-                   
-                    ewrInfo = _rnConnectService.getEWRID(combo);
-                    if (ewrInfo != null && ewrInfo.Length > 0)
-                    {
-                        incidentVinInfo.Add("EWR_Xref_Id", ewrInfo[0].Split('~')[0]);
-                      
-                    }
-
-                }
             }
 
             if (singleOptionGroup != null)
@@ -305,11 +271,19 @@ namespace Reported_Incident_Automation
                 incidentVinInfo.Add("optiongroup_seqno", singleOptionGroup["OPTIONGROUP_SEQNO"].ToString().Trim());
                 incidentVinInfo.Add("causal_part_desc_bom_pn", singleOptionGroup["DESCRIPTION"].ToString().Trim());
                 incidentVinInfo.Add("causal_part_nmbr_bom_pn", singleOptionGroup["PART_NUMBER"].ToString().Trim());
+                //Logic to update EWR_Xref_Id field
+                if (busInfo != null && busInfo.Length > 0)
+                {
+                    vin = busInfo[0].Split('~')[0];
+                    busModel = vin.Substring(4, 1);
+                    combo = busModel + "-" + singleOptionGroup["OPTIONGROUP_SEQNO"].ToString().Trim();
 
-                /*_rnConnectService.addIncidentVINRecord(incidentVinID, singleOptionGroup["WARRANTY_START_DATE"].ToString(),
-                                       singleOptionGroup["WARRANTY_END_DATE"].ToString(),
-                                       singleOptionGroup["ISCOVERED"].ToString(), "",
-                                       singleOptionGroup["OPTIONGROUP_SEQNO"].ToString());*/
+                    ewrInfo = _rnConnectService.getEWRID(combo);
+                    if (ewrInfo != null && ewrInfo.Length > 0)
+                    {
+                        incidentVinInfo.Add("EWR_Xref_Id", ewrInfo[0].Split('~')[0]);
+                    }
+                }
                 _rnConnectService.addIncidentVINRecord(incidentVinID, incidentVinInfo, "");
             }
         }
