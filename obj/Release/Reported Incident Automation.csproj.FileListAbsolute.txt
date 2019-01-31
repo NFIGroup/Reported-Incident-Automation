@@ -1,0 +1,11 @@
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\bin\Release\Reported_Incident_Automation.dll.config
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\bin\Release\Reported_Incident_Automation.dll
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\bin\Release\Reported_Incident_Automation.pdb
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\bin\Release\RightNow.AddIns.AddInViews.dll
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\bin\Release\RightNow.AddIns.AddInViews.xml
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported_Incident_Automation.ProgressForm.resources
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported_Incident_Automation.Properties.Resources.resources
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported_Incident_Automation.SalesReleaseVINSearchForm.resources
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported Incident Automation.csproj.GenerateResource.Cache
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported_Incident_Automation.dll
+C:\Users\dgraveli\Documents\Visual Studio 2010\Projects\Reported Incident Automation\Reported Incident Automation\Reported Incident Automation\obj\Release\Reported_Incident_Automation.pdb
